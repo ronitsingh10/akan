@@ -12,3 +12,6 @@ dumps/
 .DS_Store
 Thumbs.db
 node_modules/
+
+# Agent planning notes (local only)
+docs/
