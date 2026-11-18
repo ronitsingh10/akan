@@ -1,0 +1,14 @@
+# Agent instructions (local only)
+CLAUDE.md
+AGENTS.md
+.claude/
+
+# Raw database dumps (may contain the users table with credentials)
+dumps/
+*.sqlite
+*.sql
+
+# OS / editor
+.DS_Store
+Thumbs.db
+node_modules/

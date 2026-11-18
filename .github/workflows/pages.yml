@@ -1,0 +1,38 @@
+# Client preview on GitHub Pages. Publishes only the runtime files listed in the README.
+name: Deploy preview
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: node --test
+      - name: Copy runtime files and keep the preview out of search engines
+        run: |
+          mkdir _site
+          cp -R index.html styles.css assets js data media _site/
+          sed -i 's#<meta charset="utf-8">#&\n    <meta name="robots" content="noindex">#' _site/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+      - id: deployment
+        uses: actions/deploy-pages@v4

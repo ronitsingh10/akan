@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Practise Akan pronunciation. Listen to a Twi word and choose the tone of each syllable.">
+    <meta name="author" content="Ronit Singh">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; media-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+    <title>Akan Pronunciation Game · Center for African Studies</title>
+    <link rel="icon" href="assets/branding/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="assets/branding/favicon.png">
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="js/app.mjs"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#practice">Skip to practice</a>
+    <header class="clas-header">
+      <div class="clas-banner">
+        <a class="cas-brand" href="https://africa.ufl.edu/">
+          <img src="assets/branding/uf-logo.png" width="70" height="70" alt="UF">
+          <span class="link-text">Center for African Studies</span>
+        </a>
+        <nav class="cas-utility" aria-label="University links">
+            <a href="https://clas.ufl.edu"><svg aria-hidden="true" focusable="false" class="utility-chevron" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="m15 18-6-6 6-6" /> </svg><span class="link-text">College of Liberal Arts and Sciences</span></a>
+            <a href="https://ufl.edu"><span class="link-text">University of Florida</span><svg aria-hidden="true" focusable="false" class="utility-chevron" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="m9 18 6-6-6-6" /> </svg></a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="practice" tabindex="-1">
+      <div class="intro">
+        <nav class="cas-breadcrumb" aria-label="Breadcrumb"><a href="https://africa.ufl.edu/academics-programs/african-languages/">African Languages</a><span aria-hidden="true">/</span><span>Akan</span></nav>
+        
+        <h1>Akan Pronunciation Game</h1>
+        <p>Listen to the word, then choose the tone of each syllable. Practise at your own pace.</p>
+      </div>
+
+      <section class="selection-panel" aria-labelledby="selection-title">
+        <div class="selection-heading">
+          <h2 id="selection-title">Choose your practice set</h2>
+          <p>Changing your selection starts a new score.</p>
+        </div>
+        <div class="selectors">
+          <label for="course">Course<select id="course" disabled><option value="all">All courses</option></select></label>
+          <label for="module">Module<select id="module" disabled><option value="all">All modules</option></select></label>
+          <label for="lesson">Lesson<select id="lesson" disabled><option value="all">All lessons</option></select></label>
+        </div>
+      </section>
+
+      <p id="load-status" role="status">Loading your practice words…</p>
+      <noscript><p class="notice">Please enable JavaScript to play the pronunciation game.</p></noscript>
+
+      <section id="game" class="game-card" aria-label="Pronunciation practice" hidden>
+        <div class="game-topline">
+          <span id="word-context" class="word-context"></span>
+          <div class="score"><span>Words correct</span><strong id="score">0 / 0</strong></div>
+        </div>
+        <div class="exercise">
+          <section class="word-panel" aria-labelledby="word">
+            <p class="step-label"><span>01</span> Listen to the word</p>
+            <img id="word-image" class="word-image" alt="" hidden>
+            <h2 id="word" lang="ak" tabindex="-1"></h2>
+            <p id="translation" class="translation"></p>
+            <button id="play" class="play-button" type="button">
+              <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z" /> <path d="M16 9a5 5 0 0 1 0 6" /> <path d="M19.364 18.364a9 9 0 0 0 0-12.728" /> </svg>
+              <span id="play-label">Play word</span>
+            </button>
+            <p id="audio-status" class="audio-status" role="status"></p>
+            <audio id="audio" preload="none"></audio>
+          </section>
+
+          <form id="answer-form" class="answer-panel">
+            <p id="tones-heading" class="step-label"><span>02</span> Choose each tone</p>
+            <p id="tone-help" class="tone-help">Select High, Mid or Low for every syllable.</p>
+            <div id="syllables" class="syllables" role="group" aria-labelledby="tones-heading" aria-describedby="tone-help"></div>
+            <div class="answer-actions">
+              <button id="submit" class="primary-button" type="submit">Check answer <span aria-hidden="true">→</span></button>
+              <p id="feedback" class="feedback" role="status" aria-atomic="true">Take your time. You can try as often as you like.</p>
+            </div>
+          </form>
+        </div>
+        <nav class="word-navigation" aria-label="Move between words">
+          <button id="previous" class="secondary-button" type="button"><span aria-hidden="true">←</span> Previous</button>
+          <span id="position" class="position"></span>
+          <button id="next" class="secondary-button" type="button">Next <span aria-hidden="true">→</span></button>
+        </nav>
+      </section>
+      <p id="empty-state" class="notice" role="status" hidden>No words in this set. Choose another course, module or lesson.</p>
+
+      <aside class="practice-note" aria-label="How practice works">
+        <span class="note-icon" aria-hidden="true">i</span>
+        <p><strong>A little practice goes a long way.</strong> Replay the word whenever you need. Correct syllables stay selected while you try the others again.</p>
+      </aside>
+    </main>
+    <footer class="site-footer"><span>Akan language · Dr. James Essegbey</span><span>Practice only. Progress resets when you reload.</span></footer>
+  </body>
+</html>
