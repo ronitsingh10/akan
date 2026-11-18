@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 function makeDocument() {
   const ids = new Map();
   class Element {
-    constructor(tag = '') { this.tag = tag; this.children = []; this.listeners = {}; this.text = ''; this.attributes = {}; this.classList = { remove() {} }; }
+    constructor(tag = '') { this.tag = tag; this.children = []; this.listeners = {}; this.text = ''; this.attributes = {}; this.dataset = {}; this.readyState = 0; this.classList = { remove() {} }; }
     get textContent() { return this.children.length ? this.children.map(c => c.textContent ?? String(c)).join('') : this.text; }
     set textContent(value) { this.children = []; this.text = value; }
     set id(value) { ids.set(value, this); }
@@ -49,24 +49,39 @@ test('UI playback and feedback stay consistent through interaction transitions',
   const reset = async () => { $('course').value = 'all'; await $('course').emit('change'); };
   const choose = (index, tone) => $('syllables').children[index].children.find(c => c.tag === 'label' && c.children[0].value === tone).children[0].emit('change');
 
-  await t.test('play, replay, end, failure and next word have unambiguous labels', async () => {
+  await t.test('the play button shows loading and playing itself and never speaks over the recording', async () => {
     await reset();
     assert.equal($('play-label').textContent, 'Play word');
+    const play = $('audio').play;
+    $('audio').play = async () => { assert.equal($('play').dataset.state, 'loading'); await play.call($('audio')); };
     await $('play').emit('click');
-    assert.equal($('play-label').textContent, 'Replay word');
-    assert.equal($('audio-status').textContent, 'Playing…');
-    await $('audio').emit('ended');
-    assert.equal($('play-label').textContent, 'Replay word');
+    $('audio').play = play;
+    assert.equal($('play').dataset.state, 'playing');
+    assert.equal($('play-label').textContent, 'Playing…');
     assert.equal($('audio-status').textContent, '');
+    await $('audio').emit('ended');
+    assert.equal($('play').dataset.state, '');
+    assert.equal($('play-label').textContent, 'Play word');
     await $('audio').emit('error');
     assert.equal($('play-label').textContent, 'Play word');
     assert.match($('audio-status').textContent, /could not load/);
     await $('next').emit('click');
     assert.equal($('audio-status').textContent, '');
-    assert.equal($('play-label').textContent, 'Play word');
+    assert.equal($('play').hidden, false);
+    assert.equal($('audio-missing').hidden, true);
     await $('next').emit('click');
-    assert.equal($('play-label').textContent, 'Audio unavailable');
-    assert.equal($('play').disabled, true);
+    assert.equal($('play').hidden, true);
+    assert.equal($('audio-missing').hidden, false);
+  });
+
+  await t.test('checking with an unanswered syllable asks for it instead of marking it wrong', async () => {
+    await reset();
+    await choose(0, 'low');
+    await $('answer-form').emit('submit');
+    assert.match($('feedback').textContent, /Choose a tone for every syllable/);
+    assert.equal($('result-0').textContent, 'Ready to check');
+    assert.equal($('result-1').textContent, 'Choose a tone');
+    assert.equal($('score').textContent, '0 / 3');
   });
 
   await t.test('returning to a selected tone says ready, not choose a tone', async () => {

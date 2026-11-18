@@ -83,12 +83,18 @@ function renderSyllables() {
   else withSymbol($('submit'), '→', 'Check answer', false);
 }
 
+// The button itself shows loading and playing, so no announcement talks over the recording.
+function setPlayState(state) {
+  $('play').dataset.state = state;
+  $('play-label').textContent = state === 'playing' ? 'Playing…' : 'Play word';
+}
+
 function stopAudio() {
   audioVersion++;
   audio.pause();
   audio.removeAttribute('src');
   audio.load();
-  $('play-label').textContent = 'Play word';
+  setPlayState('');
   $('audio-status').textContent = '';
 }
 
@@ -109,9 +115,9 @@ function renderWord() {
   image.hidden = false;
   image.alt = word.image ? word.translation : '';
   image.src = word.image ?? placeholderImage;
-  $('play').disabled = !word.audio;
+  $('play').hidden = !word.audio;
+  $('audio-missing').hidden = Boolean(word.audio);
   if (word.audio) audio.src = word.audio;
-  else $('play-label').textContent = 'Audio unavailable';
   renderSyllables();
   const complete = game.attempt.correct.every(value => value === true);
   $('feedback').className = `feedback${complete ? ' success' : ''}`;
@@ -137,6 +143,13 @@ for (const [id, direction] of [['previous', -1], ['next', 1]]) {
 
 $('answer-form').addEventListener('submit', event => {
   event.preventDefault();
+  const unanswered = game.attempt.choices.indexOf(null);
+  if (unanswered !== -1) {
+    $('feedback').className = 'feedback';
+    $('feedback').textContent = 'Choose a tone for every syllable, then check your answer.';
+    $('syllables').querySelector(`input[name="syllable-${unanswered}"]`).focus();
+    return;
+  }
   const results = game.submit();
   renderSyllables();
   $('score').textContent = `${game.score} / ${game.words.length}`;
@@ -154,31 +167,25 @@ $('answer-form').addEventListener('submit', event => {
 });
 
 $('play').addEventListener('click', async () => {
-  if (!game.current.audio) return;
   const version = audioVersion;
   $('audio-status').textContent = '';
   try {
     if (audio.error) audio.load();
     audio.currentTime = 0;
+    if (audio.readyState < 3 /* HAVE_FUTURE_DATA */) setPlayState('loading');
     await audio.play();
   } catch (error) {
     if (version !== audioVersion || error.name === 'AbortError') return;
+    setPlayState('');
     $('audio-status').textContent = 'The recording could not play. Please try again.';
-    $('play-label').textContent = 'Play word';
   }
 });
-audio.addEventListener('playing', () => {
-  $('play-label').textContent = 'Replay word';
-  $('audio-status').textContent = 'Playing…';
-});
-audio.addEventListener('ended', () => { $('audio-status').textContent = ''; });
-audio.addEventListener('pause', () => {
-  if ($('audio-status').textContent === 'Playing…') $('audio-status').textContent = '';
-});
+audio.addEventListener('playing', () => setPlayState('playing'));
+for (const type of ['pause', 'ended']) audio.addEventListener(type, () => setPlayState(''));
 audio.addEventListener('error', () => {
   if (!audio.getAttribute('src')) return;
+  setPlayState('');
   $('audio-status').textContent = 'The recording could not load. Please try again.';
-  $('play-label').textContent = 'Play word';
 });
 $('word-image').addEventListener('error', () => {
   const image = $('word-image');
